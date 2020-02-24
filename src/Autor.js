@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import $ from 'jquery';
 import InputCustomizado from './components/InputCustomizado';
+import PubSub from 'pubsub-js';
 
 export class FormularioAutor extends Component{
     constructor() {
@@ -12,6 +13,29 @@ export class FormularioAutor extends Component{
         this.setSenha = this.setSenha.bind(this);
       }
 
+      // enviaForm(event){
+      //   console.log('dados enviados');
+      //   console.log(event);
+      //   event.preventDefault();
+      //   $.ajax({
+      //     url:"http://cdc-react.herokuapp.com/api/autores",
+      //     contentType:'application/json',
+      //     dataType: 'json',
+      //     type:'post',
+      //     data: JSON.stringify({nome:this.state.nome, email:this.state.email, senha:this.state.senha}),
+      //     success: function(novaListagem){
+      //       PubSub.publish('atualiza-lista-autores', novaListagem);
+      //       // console.log(resposta);
+      //       // console.log('dados enviados com sucesso');
+      //       // this.props.callbackAtualizaListagem(resposta);
+      //       // this.setState({lista:resposta});
+      //     }.bind(this),
+      //     error: function(resposta){
+      //     console.log('error');
+      //     }
+      //   })
+      // }
+
       enviaForm(event){
         console.log('dados enviados');
         console.log(event);
@@ -22,12 +46,13 @@ export class FormularioAutor extends Component{
           dataType: 'json',
           type:'post',
           data: JSON.stringify({nome:this.state.nome, email:this.state.email, senha:this.state.senha}),
-          success: function(resposta){
+          success: function(novaListagem){
+            PubSub.publish('atualiza-lista-autores', novaListagem);
             // console.log(resposta);
-            console.log('dados enviados com sucesso');
-            this.props.callbackAtualizaListagem(resposta);
+            // console.log('dados enviados com sucesso');
+            // this.props.callbackAtualizaListagem(resposta);
             // this.setState({lista:resposta});
-          }.bind(this),
+          },
           error: function(resposta){
           console.log('error');
           }
@@ -119,7 +144,7 @@ export default class AutorBox extends Component {
   constructor(){
     super();
     this.state = {lista: []};
-    this.atualizaListagem = this.atualizaListagem.bind(this);
+    // this.atualizaListagem = this.atualizaListagem.bind(this);
   }
 
   componentDidMount(){ // chamado depois da primeira reenderização
@@ -138,11 +163,14 @@ export default class AutorBox extends Component {
         })});
       }.bind(this)
     });
+    PubSub.subscribe('atualiza-lista-autores', function(topico, novaLista){
+      this.setState({lista: novaLista});
+    }.bind(this));
   }
 
-  atualizaListagem(novaLista){
-    this.setState({lista:novaLista});
-  }
+  // atualizaListagem(novaLista){
+  //   this.setState({lista:novaLista});
+  // }
 
   render() {
     return (
